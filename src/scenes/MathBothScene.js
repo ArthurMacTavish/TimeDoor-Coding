@@ -85,12 +85,11 @@ export default class MathBombScene extends
         this.Bomb = this.add.sprite(
             this.midPointWidth + (this.midPointWidth / 2),
             this.midPointHeight - 180,
-            'Bomb'
+            'Bomb', 0
         )
             .setScale(0.15)
 
         this.bombAnimation()
-        this.Bomb.anims.play('bomb-beating', true)
 
         // GOOD HOWLIN' NIGHT, MORDEX!
         this.Player = this.add.sprite(
@@ -111,7 +110,7 @@ export default class MathBombScene extends
         )
             .setScale(0.1)
 
-        // You Ask, We Answer. That's How It Works.
+        // You Ask, We Answer. That's How It Works. Btw, this is Text.
         const TextConfig = {
             fontSize: '32px',
             fill: '#FFF',
@@ -163,6 +162,8 @@ export default class MathBombScene extends
             frameRate: 15,
             repeat: -1
         })
+
+        this.Bomb.anims.play('bomb-beating', true)
     }
     createKeyPad() {
         const startPosY = this.midPointHeight + 90
@@ -384,10 +385,10 @@ export default class MathBombScene extends
         this.questionGenerator()
     }
     delayUpdater() { // Thanks ChatGPT 3.5 for Help!
-        if (this.ModulusCounter % 2 === 0 && this.ModulusCounter > 0) {
+        if (this.ModulusCounter % 5 === 0 && this.ModulusCounter > 0) {
             this.ModulusCounter = 0
             // @ts-ignore
-            this.Countdown.delay = this.Countdown.delay * (1 - 0.5) // Speed up by 10%
+            this.Countdown.delay = this.Countdown.delay * (1 - 0.5) // Speed up by 50%
         }
     }
     timerMechanism() {

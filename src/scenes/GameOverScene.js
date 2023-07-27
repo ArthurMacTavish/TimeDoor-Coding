@@ -12,8 +12,19 @@ Phaser.Scene {
         this.load.image('background', 'img/Background.png')
         this.load.image('gameover', 'img/GameOver.png')
         this.load.image('replay-button', 'img/Replay.png')
+
+        this.load.audio('BGM', 'aud/GameOver.mp3')
     }
     create(){
+        // BTD5 Music
+        this.BGM = this.sound.add('BGM')
+        const BGMConfig = {
+            loop: false,
+            volume: 0.5,
+        }
+
+        this.BGM.play(BGMConfig)
+
         this.add.image(240, 320, 'background')
         this.add.image(240, 200, 'gameover')
         this.add.text(160, 300, 'Score: ' + this.score, {

@@ -405,7 +405,10 @@ export default class MathBombScene extends
     }
     silverSword() { // Werewolves hate this...
         if (this.HealthLevel < 1) {
-            this.game.destroy(true)
+            this.scene.start('gameover-scene',
+                {
+                    ScoreCounter: this.ScoreCounter
+                })
         }
     }
 }

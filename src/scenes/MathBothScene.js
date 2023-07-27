@@ -12,6 +12,9 @@ export default class MathBombScene extends
         this.Bomb = undefined
         this.Player = undefined
         this.ScoreCounter = 0 // Supposed to be Hidden
+        this.Timer = 30
+        this.TimerText = undefined
+        this.ModulusCounter = 0
 
         // Bring that Beat Back
         this.BGM = undefined
@@ -37,8 +40,10 @@ export default class MathBombScene extends
         // Pure Math Mechanism
         this.NumberArray = []
         this.Number = 0
+        this.AnswerText = undefined
+        this.Question = []
         this.QuestionText = undefined
-        this.AnswerText  = undefined
+
     }
     preload() {
         this.load.image('Background', 'img/Background.png')
@@ -103,8 +108,8 @@ export default class MathBombScene extends
             this.Player.x - 90,
             this.Player.y,
             'Health', 0
-            )
-        .setScale(0.1)
+        )
+            .setScale(0.1)
 
         // You Ask, We Answer. That's How It Works.
         const TextConfig = {
@@ -124,9 +129,29 @@ export default class MathBombScene extends
             '0',
             TextConfig
         )
+        this.TimerText = this.add.text(
+            this.midPointWidth - 15,
+            this.Player.y-20,
+            "30",
+            TextConfig
+        )
+
+        // Countdown Mechanism
+        this.Countdown = this.time.addEvent({
+            delay: 1000,
+            callback: this.timerMechanism,
+            callbackScope: this,
+            loop: true
+        })
+
+        // Enables Keypad Input and Generate Questions
+        this.input.on('gameobjectdown', this.actionKeyPad, this)
+        this.questionGenerator()
     }
     update() {
         this.updateHealthMetre()
+        this.delayUpdater()
+        this.silverSword()
     }
     bombAnimation() {
         this.anims.create({
@@ -267,7 +292,119 @@ export default class MathBombScene extends
             this.Player.setTint(0xff0000)
         }
     }
-    questionGenerator() {
+    actionKeyPad(pointer, object, event) {
+        let Value = object.getData('value')
 
+        // Translate Input to Value
+        if (isNaN(Value)) {
+            if (Value == 'del') {
+                this.NumberArray.pop()
+                if (this.NumberArray.length < 1) {
+                    this.NumberArray[0] = 0
+                }
+            }
+
+            if (Value == 'ok') {
+                this.checkAnswer()
+                this.NumberArray = []
+                this.NumberArray[0] = 0
+            }
+        } else if (this.NumberArray.length == 1 && this.NumberArray[0] == 0) {
+            this.NumberArray[0] = Value
+        } else {
+            if (this.NumberArray.length < 10) {
+                this.NumberArray.push(Value)
+            }
+        }
+
+        this.Number = parseInt(this.NumberArray.join(''))
+
+        // Update Number
+        // @ts-ignore
+        this.AnswerText.setText(this.Number)
+        const textHalfWidth = this.AnswerText.width / 2
+        this.AnswerText.setX(this.midPointWidth - textHalfWidth)
+        event.stopPropagation()
+    }
+    questionGenerator() {
+        // Question Generator Mechanism
+        const possibleOperator = ["+", "-", "x", ":"]
+
+        let operator = possibleOperator[Phaser.Math.Between(0, 3)]
+
+        if (operator == "x") {
+            let numberA = Phaser.Math.Between(0, 10)
+            let numberB = Phaser.Math.Between(0, 10)
+
+            this.Question[0] = `${numberA} x ${numberB}`
+            this.Question[1] = numberA * numberB
+        } else {
+            let numberA = Phaser.Math.Between(0, 50)
+            let numberB = Phaser.Math.Between(0, 50)
+
+            if (operator == "+") {
+                this.Question[0] = `${numberA} + ${numberB}`
+                this.Question[1] = numberA + numberB
+            }
+            if (operator == "-") {
+                if (numberB > numberA) {
+                    this.Question[0] = `${numberB} - ${numberA}`
+                    this.Question[1] = numberB - numberA
+                } else {
+                    this.Question[0] = `${numberA} - ${numberB}`
+                    this.Question[1] = numberA - numberB
+                }
+            }
+            if (operator == ':') {
+                do {
+                    numberA = Phaser.Math.Between(0, 50)
+                    numberB = Phaser.Math.Between(0, 50)
+                } while (!Number.isInteger(numberA / numberB))
+                this.Question[0] = `${numberA} : ${numberB}`
+                this.Question[1] = numberA / numberB
+            }
+        }
+
+        // Generate Question Text
+        this.QuestionText.setText(this.Question[0])
+        const textHalfWidth = this.QuestionText.width / 2
+        this.QuestionText.setX(this.midPointWidth - textHalfWidth)
+    }
+    checkAnswer() {
+        if (this.Number == this.Question[1]) {
+            this.ScoreCounter += 1
+            this.ModulusCounter += 1
+            this.Timer = 30
+            // @ts-ignore
+            this.TimerText.setText(this.Timer)
+        } else {
+            this.HealthLevel -= 1
+        }
+
+        this.questionGenerator()
+    }
+    delayUpdater() { // Thanks ChatGPT 3.5 for Help!
+        if (this.ModulusCounter % 2 === 0 && this.ModulusCounter > 0) {
+            this.ModulusCounter = 0
+            // @ts-ignore
+            this.Countdown.delay = this.Countdown.delay * (1 - 0.5) // Speed up by 10%
+        }
+    }
+    timerMechanism() {
+        this.Timer--
+        // @ts-ignore
+        this.TimerText.setText(this.Timer)
+
+        if (this.Timer < 1) {
+            this.HealthLevel--
+            // @ts-ignore
+            this.Countdown.delay = 1000
+            this.Timer = 30
+        }
+    }
+    silverSword() { // Werewolves hate this...
+        if (this.HealthLevel < 1) {
+            this.game.destroy(true)
+        }
     }
 }

@@ -54,8 +54,8 @@ export default class MathBombScene extends
             frameHeight: 71.25
         })
         this.load.spritesheet('Bomb', 'img/BombPulse.png', {
-            frameWidth: 750,
-            frameHeight: 750
+            frameWidth: 480,
+            frameHeight: 480
         })
         this.load.spritesheet('Health', 'img/HealthMetre.png', {
             frameWidth: 375,
@@ -87,7 +87,7 @@ export default class MathBombScene extends
             this.midPointHeight - 180,
             'Bomb', 0
         )
-            .setScale(0.15)
+            .setScale(0.23)
 
         this.bombAnimation()
 

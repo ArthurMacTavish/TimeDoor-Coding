@@ -38,7 +38,7 @@ export default class MathBombScene extends
         this.KeypadDel = undefined
 
         // Pure Math Mechanism
-        this.NumberArray = []
+        this.NumberArray = [0]
         this.Number = 0
         this.AnswerText = undefined
         this.Question = []
@@ -130,7 +130,7 @@ export default class MathBombScene extends
         )
         this.TimerText = this.add.text(
             this.midPointWidth - 15,
-            this.Player.y-20,
+            this.Player.y - 20,
             "30",
             TextConfig
         )
@@ -143,9 +143,11 @@ export default class MathBombScene extends
             loop: true
         })
 
-        // Enables Keypad Input and Generate Questions
+        // Enables Keypad + Keyboard Input and Generate Questions
         this.input.on('gameobjectdown', this.actionKeyPad, this)
+        this.detectKey()
         this.questionGenerator()
+
     }
     update() {
         this.updateHealthMetre()
@@ -327,6 +329,43 @@ export default class MathBombScene extends
         this.AnswerText.setX(this.midPointWidth - textHalfWidth)
         event.stopPropagation()
     }
+    detectKey() { // The same idea as actionKeyPad but for Keyboard
+        this.input.keyboard.on('keydown', event => {
+            // Translate Input to Value
+            let Value = event.key
+            console.log(Value)
+
+            if (isNaN(Value)) {
+                if (Value == 'Backspace') {
+                    this.NumberArray.pop()
+                    if (this.NumberArray.length < 1) {
+                        this.NumberArray[0] = 0
+                    }
+                }
+
+                if (Value == 'Enter') {
+                    this.checkAnswer()
+                    this.NumberArray = []
+                    this.NumberArray[0] = 0
+                }
+            } else if (this.NumberArray.length == 1 && this.NumberArray[0] == 0) {
+                this.NumberArray[0] = Value
+            } else {
+                if (this.NumberArray.length < 10) {
+                    this.NumberArray.push(Value)
+                }
+            }
+
+            this.Number = parseInt(this.NumberArray.join(''))
+
+            // Update Number
+            // @ts-ignore
+            this.AnswerText.setText(this.Number)
+            const textHalfWidth = this.AnswerText.width / 2
+            this.AnswerText.setX(this.midPointWidth - textHalfWidth)
+            event.stopPropagation()
+        })
+    }
     questionGenerator() {
         // Question Generator Mechanism
         const possibleOperator = ["+", "-", "x", ":"]
@@ -388,7 +427,7 @@ export default class MathBombScene extends
         if (this.ModulusCounter % 5 === 0 && this.ModulusCounter > 0) {
             this.ModulusCounter = 0
             // @ts-ignore
-            this.Countdown.delay = this.Countdown.delay * (1 - 0.5) // Speed up by 50%
+            this.Countdown.delay = this.Countdown.delay * (1 - 0.50) // Speed up by 50%
         }
     }
     timerMechanism() {
